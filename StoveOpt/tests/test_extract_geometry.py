@@ -10,6 +10,12 @@ import xlrd
 import numpy
 from pathlib import Path
 
+#from import_geometry import extract_geometry
+
+current_dir = os.getcwd()
+file_test_steps = "//tests//Stove_test_Geometry.xlsx"
+file_path = current_dir + file_test_steps
+
 def extract_geometry(file_path):
     """
     Pulling Data from excel workbook
@@ -72,15 +78,16 @@ def extract_geometry(file_path):
     pt15x = worksheet.cell(16,2).value
     pt15z = worksheet.cell(16,3).value
     pt15y = worksheet.cell(16,4).value
-    return pt1x, pt1z, pt1y, pt2x, pt2z, pt2y, pt3x, pt3z, pt3y, pt4x, pt4z, pt4y, pt5x, pt5z, pt5y, pt6x, pt6z, pt6y, pt7x, pt7z, pt7y, pt8x, pt8z, pt8y, pt9x, pt9z, pt9y, pt10x, pt10z, pt10y, pt11x, pt11z, pt11y, pt12x, pt12z, pt12y, pt13x, pt13z, pt13y,  pt14x, pt14z, pt14y, pt15x, pt15z, pt15y, pt0x, pt0z, pt0y
+    return pt0x, pt0z, pt0y, pt1x, pt1z, pt1y, pt2x, pt2z, pt2y, pt3x, pt3z, pt3y, pt4x, pt4z, pt4y, pt5x, pt5z, pt5y, pt6x, pt6z, pt6y, pt7x, pt7z, pt7y, pt8x, pt8z, pt8y, pt9x, pt9z, pt9y, pt10x, pt10z, pt10y, pt11x, pt11z, pt11y, pt12x, pt12z, pt12y, pt13x, pt13z, pt13y,  pt14x, pt14z, pt14y, pt15x, pt15z, pt15y
 
 
 def test_extract_geometry():
     """ purpose of the test is to test that geometry can be pulled from xlsx (modern) excel versions--comparing returned values to a locked spreadsheet"""
-    current_dir = os.getcwd()
-    file_test_steps = "//tests//Stove_test_Geometry.xlsx"
-    file_path = current_dir + file_test_steps
-    pt1x, pt1z, pt1y, pt2x, pt2z, pt2y, pt3x, pt3z, pt3y, pt4x, pt4z, pt4y, pt5x, pt5z, pt5y, pt6x, pt6z, pt6y, pt7x, pt7z, pt7y, pt8x, pt8z, pt8y, pt9x, pt9z, pt9y, pt10x, pt10z, pt10y, pt11x, pt11z, pt11y, pt12x, pt12z, pt12y, pt13x, pt13z, pt13y,  pt14x, pt14z, pt14y, pt15x, pt15z, pt15y, pt16x, pt16z, pt16y = extract_geometry(file_path)
+
+    pt0x, pt0z, pt0y, pt1x, pt1z, pt1y, pt2x, pt2z, pt2y, pt3x, pt3z, pt3y, pt4x, pt4z, pt4y, pt5x, pt5z, pt5y, pt6x, pt6z, pt6y, pt7x, pt7z, pt7y, pt8x, pt8z, pt8y, pt9x, pt9z, pt9y, pt10x, pt10z, pt10y, pt11x, pt11z, pt11y, pt12x, pt12z, pt12y, pt13x, pt13z, pt13y,  pt14x, pt14z, pt14y, pt15x, pt15z, pt15y = extract_geometry(file_path)
+    assert pt0x == 0
+    assert pt0z == 0
+    assert pt0y == 0
     assert pt1x == 0.1
     assert pt1z == 0
     assert pt1y == 0

@@ -8,6 +8,7 @@ import numpy
 import yaml
 import sys
 import argparse
+import xlrd
 
 def convert_namespace(args):
     """Purpose is to convert the namespace from the args to a pure input file for reading
@@ -57,8 +58,6 @@ def pull_input_data(input_file):
     return path, fname, Q_100, Q_primary, max_delta_x, delta_t, temporal_choice, n_cases_surr, ss_tol, OS
 
 
-
-
 def locate_geometry(path, fname):
     """
     Pull file path and name from the input file (command line argument)
@@ -76,7 +75,6 @@ def locate_geometry(path, fname):
     #else:
     return file_path
 
-import xlrd
 def extract_geometry(file_path):
     """
     Pulling Data from excel workbook
@@ -139,7 +137,7 @@ def extract_geometry(file_path):
     pt15x = worksheet.cell(16,2).value
     pt15z = worksheet.cell(16,3).value
     pt15y = worksheet.cell(16,4).value
-    return pt1x, pt1z, pt1y, pt2x, pt2z, pt2y, pt3x, pt3z, pt3y, pt4x, pt4z, pt4y, pt5x, pt5z, pt5y, pt6x, pt6z, pt6y, pt7x, pt7z, pt7y, pt8x, pt8z, pt8y, pt9x, pt9z, pt9y, pt10x, pt10z, pt10y, pt11x, pt11z, pt11y, pt12x, pt12z, pt12y, pt13x, pt13z, pt13y,  pt14x, pt14z, pt14y, pt15x, pt15z, pt15y, pt0x, pt0z, pt0y
+    return pt0x, pt0z, pt0y, pt1x, pt1z, pt1y, pt2x, pt2z, pt2y, pt3x, pt3z, pt3y, pt4x, pt4z, pt4y, pt5x, pt5z, pt5y, pt6x, pt6z, pt6y, pt7x, pt7z, pt7y, pt8x, pt8z, pt8y, pt9x, pt9z, pt9y, pt10x, pt10z, pt10y, pt11x, pt11z, pt11y, pt12x, pt12z, pt12y, pt13x, pt13z, pt13y,  pt14x, pt14z, pt14y, pt15x, pt15z, pt15y
 
 # Create additional front face points including wood zone
 def create_fuel_blocks(pt0x, pt1x):
