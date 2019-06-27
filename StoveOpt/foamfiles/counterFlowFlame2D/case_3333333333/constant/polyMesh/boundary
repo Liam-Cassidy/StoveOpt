@@ -20,45 +20,45 @@ FoamFile
     fuel
     {
         type            patch;
-        nFaces          196;
-        startFace       10143;
+        nFaces          4;
+        startFace       9;
     }
     primary_air
     {
         type            patch;
-        nFaces          49;
-        startFace       10339;
+        nFaces          1;
+        startFace       13;
     }
     Secondary_air_RHS
     {
         type            patch;
-        nFaces          49;
-        startFace       10388;
+        nFaces          1;
+        startFace       14;
     }
     Secondary_air_LHS
     {
         type            patch;
-        nFaces          49;
-        startFace       10437;
+        nFaces          1;
+        startFace       15;
     }
     outlet
     {
         type            patch;
-        nFaces          98;
-        startFace       10486;
+        nFaces          2;
+        startFace       16;
     }
     stove_body
     {
         type            patch;
-        nFaces          833;
-        startFace       10584;
+        nFaces          17;
+        startFace       18;
     }
     frontAndBack
     {
         type            empty;
         inGroups        1(empty);
-        nFaces          1078;
-        startFace       11417;
+        nFaces          22;
+        startFace       35;
     }
 )
 

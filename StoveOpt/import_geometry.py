@@ -14,7 +14,6 @@ def convert_namespace(args):
     """Purpose is to convert the namespace from the args to a pure input file for reading
 
     Args:
-
         args (namespace): Argument provided by user on command fuel_vertice_concatenate
 
     Returns:
@@ -51,11 +50,10 @@ def pull_input_data(input_file):
         Q_primary = doc['case']['primary_air_flow_rate'] # maximum primary airflow rate
         max_delta_x = doc['case']['max_grid_spacing'] # maximum grid spacing selected [m]
         delta_t = doc['case']['time_step'] # time step for simulation
-        temporal_choice = doc['case']['temporal'] # choice for eithe ss or transient
-        n_cases_surr = doc['case']['number_intial_surrounding_cases'] # number of cases to be run surrounding the 100% flow
-        ss_tol = doc['case']['ss_tolerance'] # Tolerance for iteration convergence
+        final_time = doc['case']['final_time'] # choice for eithe ss or transient
         OS = doc['case']['OS'] # operating system of the user. Used for fpath manipulation
-    return path, fname, Q_100, Q_primary, max_delta_x, delta_t, temporal_choice, n_cases_surr, ss_tol, OS
+        num_cases_initial = doc['case']['num_cases_initial']
+    return path, fname, Q_100, Q_primary, max_delta_x, delta_t, final_time, OS, num_cases_initial
 
 
 def locate_geometry(path, fname):
@@ -70,7 +68,7 @@ def locate_geometry(path, fname):
     Returns:
         file_path (str): full file path for input stove geometry defined by user in input yaml file.s
     """
-    file_path = path + '\\' + fname
+    file_path = path + '//' + fname
     print(file_path)
     #else:
     return file_path
@@ -137,6 +135,14 @@ def extract_geometry(file_path):
     pt15x = worksheet.cell(16,2).value
     pt15z = worksheet.cell(16,3).value
     pt15y = worksheet.cell(16,4).value
+
+    print("pt0x from extract geom")
+    print(pt0x)
+    print("pt0y from extract geom")
+    print(pt0y)
+    print("pt0z from extract geom")
+    print(pt0z)
+
     return pt0x, pt0z, pt0y, pt1x, pt1z, pt1y, pt2x, pt2z, pt2y, pt3x, pt3z, pt3y, pt4x, pt4z, pt4y, pt5x, pt5z, pt5y, pt6x, pt6z, pt6y, pt7x, pt7z, pt7y, pt8x, pt8z, pt8y, pt9x, pt9z, pt9y, pt10x, pt10z, pt10y, pt11x, pt11z, pt11y, pt12x, pt12z, pt12y, pt13x, pt13z, pt13y,  pt14x, pt14z, pt14y, pt15x, pt15z, pt15y
 
 # Create additional front face points including wood zone
@@ -236,6 +242,16 @@ def points_to_strings(pt1x, pt1z, pt1y, pt2x, pt2z, pt2y, pt3x, pt3z, pt3y, pt4x
     pt0xstr= str(pt0x)[:5]
     pt0zstr = str(pt0z)[:5]
     pt0ystr = str(pt0y)[:5]
+
+    print("pt0xstr from ponts to strings")
+    print(pt0xstr)
+
+    print("pt0zstr from ponts to strings")
+    print(pt0zstr)
+
+    print("pt0ystr from ponts to strings")
+    print(pt0ystr)
+
     pt1xstr= str(pt1x)[:5]
     pt1zstr = str(pt1z)[:5]
     pt1ystr = str(pt1y)[:5]
@@ -364,6 +380,9 @@ def vertice_concatenate(pt1xstr, pt1zstr, pt1ystr, pt2xstr, pt2zstr, pt2ystr, pt
     pt48str = "(" + pt48ystr + " " + pt48xstr + " " + pt48zstr + ")"
     pt50str = "(" + pt50ystr + " " + pt50xstr + " " + pt50zstr + ")"
 
+    print("here is pt0str from imoprtgeom-vertice_concatenate")
+    print(pt0str)
+
 
     return pt0str, pt1str, pt2str, pt3str, pt4str, pt5str, pt6str, pt7str, pt8str, pt9str, pt10str, pt11str, pt12str, pt13str, pt14str, pt15str, pt16str, pt17str, pt18str, pt19str, pt20str, pt21str, pt44str, pt46str, pt48str, pt50str
 
@@ -417,6 +436,5 @@ def create_back_points(shift, pt1xstr, pt1zstr, pt1ystr, pt2xstr, pt2zstr, pt2ys
     pt47str = "(" + shift_str + " " + pt46xstr + " " + pt46zstr + ")"
     pt49str = "(" + shift_str + " " + pt48xstr + " " + pt48zstr + ")"
     pt51str = "(" + shift_str + " " + pt50xstr + " " + pt50zstr + ")"
-
 
     return pt22str, pt23str, pt24str, pt25str, pt26str, pt27str, pt28str, pt29str, pt30str, pt31str, pt32str, pt33str, pt34str, pt35str, pt36str, pt37str, pt38str, pt39str, pt40str, pt41str, pt42str, pt43str, pt45str, pt47str, pt49str, pt51str
