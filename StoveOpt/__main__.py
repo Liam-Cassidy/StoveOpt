@@ -11,6 +11,7 @@ Created on Mon Apr 22 15:52:06 2019
 #from import_geometry import *
 import os
 import fileinput
+import shutil
 
 """ Command line arguments:"""
 # Import necessary packages
@@ -24,6 +25,7 @@ import new_case_setup
 import post_processor
 import run_surrounding_cases
 import case_setup
+import create_controldict
 
 from import_geometry import *
 from create_blockmeshfile import *
@@ -31,6 +33,7 @@ from run_surrounding_cases import *
 from new_case_setup import *
 from post_processor import *
 from case_setup import *
+from create_controldict import *
 
 
 def main():
@@ -52,7 +55,7 @@ def main():
     input_file = convert_namespace(args)
 
     # EXTRACT DATA FROM THE INPUT FILE
-    path, fname, Q_100, Q_primary, max_delta_x, delta_t, final_time, OS, num_cases_initial = pull_input_data(input_file)
+    path, fname, Q_100, Q_primary, max_delta_x, start_time, end_time, delta_t, num_cases_initial, write_interval, write_format, max_co, OS = pull_input_data(input_file)
 
 
     # extract the excel filename and path from the input file--pass to locate geometry module
@@ -90,8 +93,29 @@ def main():
     pt22str, pt23str, pt24str, pt25str, pt26str, pt27str, pt28str, pt29str, pt30str, pt31str, pt32str, pt33str, pt34str, pt35str, pt36str, pt37str, pt38str, pt39str, pt40str, pt41str, pt42str, pt43str, pt45str, pt47str, pt49str, pt51str = create_back_points(shift, pt1xstr, pt1zstr, pt1ystr, pt2xstr, pt2zstr, pt2ystr, pt3xstr, pt3zstr, pt3ystr, pt4xstr, pt4zstr, pt4ystr, pt5xstr, pt5zstr, pt5ystr, pt6xstr, pt6zstr, pt6ystr, pt7xstr, pt7zstr, pt7ystr, pt8xstr, pt8zstr, pt8ystr, pt9xstr, pt9zstr, pt9ystr, pt10xstr, pt10zstr, pt10ystr, pt11xstr, pt11zstr, pt11ystr, pt12xstr, pt12zstr, pt12ystr, pt13xstr, pt13zstr, pt13ystr,  pt14xstr, pt14zstr, pt14ystr, pt15xstr, pt15zstr, pt15ystr, pt0xstr, pt0zstr, pt0ystr, pt16xstr, pt16zstr, pt16ystr, pt17xstr, pt17zstr, pt17ystr, pt18xstr, pt18zstr, pt18ystr, pt19xstr, pt19zstr, pt19ystr, pt20xstr, pt20zstr, pt20ystr, pt21xstr, pt21zstr, pt21ystr, pt44xstr, pt44zstr, pt44ystr, pt46xstr, pt46zstr, pt46ystr, pt48xstr, pt48zstr, pt48ystr, pt50xstr, pt50ystr, pt50zstr)
 
 
-    # CREATE ALL THE INITIAL SURROUNDING CASES
+    # Compute the initial velocity field
+    velocity_dictionary, velocity_floats, k_tot = compute_initial_velocities(Q_100, num_cases_initial)
+    # Create velocity strings for files
+    velocity_case_names = edit_velocity_strings(velocity_dictionary, k_tot)
+    # Solve for strings of case files
+    case_full_paths, case_folder_names = create_case_directories(velocity_case_names, k_tot)
+    # Add strings for foam file directories--NOT MAKEING DIRS YET
+    case_zero_paths, case_system_paths, case_constant_paths = add_foam_directories(case_full_paths, k_tot)
+    print("case system paths from main:")
+    print(case_system_paths)
+    # Creating foam directories in cases
+    paste_static_foam_files(case_zero_paths, case_system_paths, case_constant_paths, k_tot)
 
+
+
+
+    # WRITE AND RELOCATE THE CONTROLDICT File
+    controldict_template = locate_controldit_template()
+    write_controldict_template(controldict_template, start_time, end_time, delta_t, write_interval, write_format, max_co, pt10str, pt11str, pt9str, pt48str, pt44str, pt14str, pt20str, pt6str, pt21str, pt7str, pt46str, pt15str, pt8str, pt50str, pt12str, pt13str)
+    controldict_for_run = move_controldict(controldict_template)
+    controldict_case_paths = controldict_case_move(controldict_for_run, case_system_paths, k_tot)
+
+    # CREATE ALL THE INITIAL SURROUNDING CASES
     blockmesh_template = locate_blockmesh_template()
 
     num_cells_int, num_cells_double, num_cells_int_str, num_cells_int_str_concat = compute_num_cells(max_delta_x, pt0x, pt1x)
@@ -101,41 +125,42 @@ def main():
     # move written blockmesh to the run folder, and the backup empty template to the tmplate directory
     blockmesh_for_run = move_blockmesh(blockmesh_template)
 
-    # Compute the initial velocity field
-    velocity_dictionary, velocity_floats, k_tot = compute_initial_velocities(Q_100, num_cases_initial)
 
-    # Create velocity strings for files
-    velocity_case_names = edit_velocity_strings(velocity_dictionary, k_tot)
 
-    # Solve for strings of case files
-    case_full_paths, case_folder_names = create_case_directories(velocity_case_names, k_tot)
 
-    # Add strings for foam file directories--NOT MAKEING DIRS YET
-    case_zero_paths, case_system_paths, case_constant_paths = add_foam_directories(case_full_paths, k_tot)
+
 
     # Move the blockmesh edited files to the case files
     blockmesh_case_paths = blockmesh_case_move(blockmesh_for_run, case_system_paths, k_tot)
 
-    # Pasting in the static foam fils
-    paste_static_foam_files(case_zero_paths, case_system_paths, case_constant_paths, k_tot)
+    # Write the details files
+    case_details_files = write_details_file(case_zero_paths, velocity_dictionary, k_tot)
+
+    # Edit Boundary condition files
+    case_U_files = write_velocity_files(velocity_dictionary, case_zero_paths, Q_primary, k_tot)
+
+    # FILES ARE FULLY DEFINED AT THIS POINT, NOW NEED TO RUN ITERATIVELY, PRIOR TO POST PROCESSING
+    
+
+
 
     # Edit the Boundary conditions for the 5 secondary flow cases
-    U_25_RHS_str, U_50_RHS_str, U_100_RHS_str, U_125_RHS_str, U_150_RHS_str, U_25_LHS_str, U_50_LHS_str, U_100_LHS_str, U_125_LHS_str, U_150_LHS_str = compute_velocities(U_100)
+    #U_25_RHS_str, U_50_RHS_str, U_100_RHS_str, U_125_RHS_str, U_150_RHS_str, U_25_LHS_str, U_50_LHS_str, U_100_LHS_str, U_125_LHS_str, U_150_LHS_str = compute_velocities(U_100)
 
-    path_100, path_25, path_50, path_125, path_150 = locate_directories()
+    #path_100, path_25, path_50, path_125, path_150 = locate_directories()
 
     # locate zero directories
-    fname_0_100, fname_0_25, fname_0_50, fname_0_125, fname_0_150, path_0_100, path_0_25, path_0_50, path_0_125, path_0_150 = locate_zero_files(path_100, path_25, path_50, path_125, path_150)
+    #fname_0_100, fname_0_25, fname_0_50, fname_0_125, fname_0_150, path_0_100, path_0_25, path_0_50, path_0_125, path_0_150 = locate_zero_files(path_100, path_25, path_50, path_125, path_150)
 
     """ If the files have already been edited, then pass over the edits----THIS IS CRUCIAL"""
     # write the velocity files in the zero folder
-    details_file_25, details_file_50, details_file_100, details_file_125, details_file_150 = write_velocity_files(U_25_RHS_str, U_50_RHS_str, U_100_RHS_str, U_125_RHS_str, U_150_RHS_str, U_25_LHS_str, U_50_LHS_str, U_100_LHS_str, U_125_LHS_str, U_150_LHS_str, path_0_100, path_0_125, path_0_150, path_0_25, path_0_50)
+    #details_file_25, details_file_50, details_file_100, details_file_125, details_file_150 = write_velocity_files(U_25_RHS_str, U_50_RHS_str, U_100_RHS_str, U_125_RHS_str, U_150_RHS_str, U_25_LHS_str, U_50_LHS_str, U_100_LHS_str, U_125_LHS_str, U_150_LHS_str, path_0_100, path_0_125, path_0_150, path_0_25, path_0_50)
 
     # edit the boundary conditions
-    U_RHS_25, U_RHS_50, U_RHS_100, U_RHS_125, U_RHS_150, U_LHS_25, U_LHS_50, U_LHS_100, U_LHS_125, U_LHS_150 = edit_boundary_conditions(fname_0_100, fname_0_25, fname_0_50, fname_0_125, fname_0_150, U_25_RHS_str, U_50_RHS_str, U_100_RHS_str, U_125_RHS_str, U_150_RHS_str, U_25_LHS_str, U_50_LHS_str, U_100_LHS_str, U_125_LHS_str, U_150_LHS_str)
+    #U_RHS_25, U_RHS_50, U_RHS_100, U_RHS_125, U_RHS_150, U_LHS_25, U_LHS_50, U_LHS_100, U_LHS_125, U_LHS_150 = edit_boundary_conditions(fname_0_100, fname_0_25, fname_0_50, fname_0_125, fname_0_150, U_25_RHS_str, U_50_RHS_str, U_100_RHS_str, U_125_RHS_str, U_150_RHS_str, U_25_LHS_str, U_50_LHS_str, U_100_LHS_str, U_125_LHS_str, U_150_LHS_str)
 
     # Edit the controlDict file
-    modify_controlDict(pt10str, pt11str, pt9str, pt48str, pt44str, pt14str, pt20str, pt6str, pt21str, pt7str, pt46str, pt15str, pt8str, pt50str, pt12str, pt13str)
+    #modify_controlDict(pt10str, pt11str, pt9str, pt48str, pt44str, pt14str, pt20str, pt6str, pt21str, pt7str, pt46str, pt15str, pt8str, pt50str, pt12str, pt13str)
 
     """At this point, the 25-150 cases are defined.
     This is where running the cases would go"""

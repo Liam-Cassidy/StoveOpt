@@ -12,9 +12,6 @@ from shutil import copy
 import os
 
 
-max_delta_x = 0.05
-pt0x = 0
-pt1x = 0.37
 def locate_blockmesh_template():
     """the function uses the StoveOpt path and blockmesh template name to open the
     template version of the blockMeshDict file for editing in the system folder

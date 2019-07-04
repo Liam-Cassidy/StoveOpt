@@ -44,16 +44,24 @@ def pull_input_data(input_file):
 
     with open(input_file, 'r') as f:
         doc = yaml.load(f)
-        path = doc['case']['geometry_file_directory'] # pulling path
-        fname = doc['case']['geometry_file_name'] #pulling filename
-        Q_100 = doc['case']['secondary_air_flow_rate'] # 100% flow rate [m^3/s]
-        Q_primary = doc['case']['primary_air_flow_rate'] # maximum primary airflow rate
-        max_delta_x = doc['case']['max_grid_spacing'] # maximum grid spacing selected [m]
-        delta_t = doc['case']['time_step'] # time step for simulation
-        final_time = doc['case']['final_time'] # choice for eithe ss or transient
-        OS = doc['case']['OS'] # operating system of the user. Used for fpath manipulation
-        num_cases_initial = doc['case']['num_cases_initial']
-    return path, fname, Q_100, Q_primary, max_delta_x, delta_t, final_time, OS, num_cases_initial
+        path = doc['case']['Geometry file directory'] # pulling path
+        fname = doc['case']['Geometry file name'] #pulling filename
+        Q_100 = doc['case']['Secondary air flow rate'] # 100% flow rate [m^3/s]
+        Q_primary = doc['case']['Primary air flow rate'] # maximum primary airflow rate
+        max_delta_x = doc['case']['Maximum grid spacing'] # maximum grid spacing selected [m]
+        start_time = doc['case']['Start time']
+        end_time = doc['case']['End Time']
+        delta_t = doc['case']['Time step'] # time step for simulation
+        num_cases_initial = doc['case']['Initial number of cases']
+        write_interval = doc['case']['Write interval']
+        write_format = doc['case']['Write format']
+        max_co = doc['case']['maxCo']
+        OS = doc['case']['Operating System'] # operating system of the user. Used for fpath manipulation
+
+
+
+
+    return path, fname, Q_100, Q_primary, max_delta_x, start_time, end_time, delta_t, num_cases_initial, write_interval, write_format, max_co, OS
 
 
 def locate_geometry(path, fname):
